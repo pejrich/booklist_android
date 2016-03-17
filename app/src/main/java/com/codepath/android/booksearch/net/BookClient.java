@@ -27,4 +27,9 @@ public class BookClient {
             e.printStackTrace();
         }
     }
+
+    public void getBook(String openLibraryId, JsonHttpResponseHandler handler) {
+        String url = "http://openlibrary.org/api/get?key=/b/" + openLibraryId;
+        client.get(url, handler);
+    }
 }

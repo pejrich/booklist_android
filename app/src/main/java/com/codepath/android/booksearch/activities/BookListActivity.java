@@ -1,9 +1,17 @@
 package com.codepath.android.booksearch.activities;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.codepath.android.booksearch.R;
@@ -25,19 +33,20 @@ public class BookListActivity extends AppCompatActivity {
     private ListView lvBooks;
     private BookAdapter bookAdapter;
     private BookClient client;
+    private ArrayList<Book> aBooks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_list);
         lvBooks = (ListView) findViewById(R.id.lvBooks);
-        ArrayList<Book> aBooks = new ArrayList<>();
+        aBooks = new ArrayList<>();
         // initialize the adapter
         bookAdapter = new BookAdapter(this, aBooks);
         // attach the adapter to the ListView
         lvBooks.setAdapter(bookAdapter);
         // Fetch the data remotely
-        fetchBooks("Oscar Wilde");
+        setBookClickListener();
     }
 
     // Executes an API call to the OpenLibrary search endpoint, parses the results
@@ -49,7 +58,7 @@ public class BookListActivity extends AppCompatActivity {
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
                     JSONArray docs;
-                    if(response != null) {
+                    if (response != null) {
                         // Get the docs json array
                         docs = response.getJSONArray("docs");
                         // Parse json array into array of model objects
@@ -75,10 +84,27 @@ public class BookListActivity extends AppCompatActivity {
         });
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_book_list, menu);
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_book_list, menu);
+        MenuItem searchItem = menu.findItem(R.id.searchIcon);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.i("logger", "submit query is: " + query);
+                fetchBooks(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.i("logger", "change query is: " + newText);
+                return false;
+            }
+        });
         return true;
     }
 
@@ -95,5 +121,18 @@ public class BookListActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void setBookClickListener() {
+        final Context that = this;
+        lvBooks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Book book = aBooks.get(position);
+                Intent i = new Intent(that, BookDetailActivity.class);
+                i.putExtra("detail", book);
+                startActivity(i);
+            }
+        });
     }
 }

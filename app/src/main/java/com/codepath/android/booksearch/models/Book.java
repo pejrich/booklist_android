@@ -1,5 +1,7 @@
 package com.codepath.android.booksearch.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -8,10 +10,46 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class Book {
+public class Book implements Parcelable {
     private String openLibraryId;
     private String author;
     private String title;
+
+    private Book mInfo;
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeString(author);
+        out.writeString(title);
+        out.writeString(openLibraryId);
+    }
+
+    public Book() {
+    }
+
+    private Book(Parcel in) {
+        author = in.readString();
+        title = in.readString();
+        openLibraryId = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Parcelable.Creator<Book> CREATOR =
+        new Parcelable.Creator<Book>() {
+            @Override
+            public Book createFromParcel(Parcel in) {
+                return new Book(in);
+            }
+
+            @Override
+            public Book[] newArray(int size) {
+                return new Book[size];
+            }
+        };
 
     public String getOpenLibraryId() {
         return openLibraryId;
